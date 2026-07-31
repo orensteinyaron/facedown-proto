@@ -202,8 +202,11 @@
     <div style="height:12px"></div>
     <div class="mut center">the session <b style="color:#fff">is</b> the game — aura intensifies the longer you last.</div>
     <div class="spacer"></div>
-    <button class="btn ghost" onclick="crack()">⚡ simulate: someone grabs their phone</button>
-    <div class="foot">(demo control — real app detects app-exit / screen-wake)</div>
+    <div class="row" style="gap:8px">
+      <button class="btn ghost grow" onclick="crack()">⚡ someone grabs their phone</button>
+      <button class="btn ghost sm" onclick="previewCues()" title="hear the alerts">🔊 cues</button>
+    </div>
+    <div class="foot">🔊 turn sound on — alerts at 10 min &amp; 1 min left, then a "mission accomplished" chime at the finish · tap 🔊 to preview</div>
   </section>
 
   <!-- WINNER -->
@@ -477,9 +480,22 @@
        "Nobody's out. Goal = the whole table stays present. Wholesome vibe.";
     document.getElementById('lobbyMode').textContent=(elimMode?'☠️ Elimination':'🤝 Co-op')+' · 60 min · pot 400 ✦';
   }
-  function startSession(){go('live');cracked=0;cl=59*60+12;fmt();
+  // --- audio cues (Web Audio + speech) — YO's ask: 10-min, 1-min & finish alerts ---
+  let actx=null;
+  function primeAudio(){try{if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();}catch(e){}}
+  function tone(freq,dur,gain,when){if(!actx)return;const t=actx.currentTime+(when||0);const o=actx.createOscillator(),g=actx.createGain();o.type='sine';o.frequency.value=freq;o.connect(g);g.connect(actx.destination);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(gain,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.start(t);o.stop(t+dur+0.03);}
+  function say(text){try{const u=new SpeechSynthesisUtterance(text);u.rate=1;u.pitch=1;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}}
+  function cueCheckpoint(label){primeAudio();tone(880,0.14,0.25,0);tone(660,0.18,0.22,0.16);say(label);}
+  function cueComplete(){primeAudio();[523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,i===3?0.5:0.16,0.28,i*0.16));say('Mission accomplished');}
+  function previewCues(){primeAudio();cueCheckpoint('10 minutes left');setTimeout(()=>cueCheckpoint('1 minute left'),1600);setTimeout(cueComplete,3400);}
+  function endSession(){cueComplete();go(elimMode?'winner':'drop');}
+  function startSession(){go('live');cracked=0;cl=59*60+12;fmt();primeAudio();
     if(timer)clearInterval(timer);
-    timer=setInterval(()=>{cl-=17;if(cl<0)cl=0;fmt();},900);}
+    timer=setInterval(()=>{const prev=cl;cl-=17;if(cl<0)cl=0;fmt();
+      if(prev>600&&cl<=600)cueCheckpoint('10 minutes left');
+      else if(prev>60&&cl<=60)cueCheckpoint('1 minute left');
+      if(cl===0){clearInterval(timer);endSession();}
+    },900);}
   function fmt(){let m=Math.floor(cl/60),s=cl%60;document.getElementById('clock').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;}
   const order=['ken','leo','maya'];
   function crack(){
@@ -489,7 +505,7 @@
       col.innerHTML='<div class="orb sm dead"></div>'+name+' 💀';
       showToast(name+' grabbed their phone — aura lost. stake stays in the pot ☠️');
       cracked++;
-    } else { clearInterval(timer); go(elimMode?'winner':'drop'); }
+    } else { clearInterval(timer); endSession(); }
   }
   function showToast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;
     document.getElementById('live').appendChild(t);setTimeout(()=>t.remove(),2200);}
