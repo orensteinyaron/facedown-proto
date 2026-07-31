@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FACEDOWN — Clickable Prototype v1</title>
+<style>
+  :root{
+    --bg:#07070c; --panel:#0f0f18; --panel2:#15151f;
+    --ink:#f4f2ff; --mut:#8a86a6; --line:#22212f;
+    --grad:linear-gradient(120deg,#ff2d95,#8b5cff 45%,#00e5ff);
+    --ent:#37e0c4; --ent2:#4aa8ff; --entgrad:linear-gradient(120deg,#37e0c4,#4aa8ff);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#050509;color:var(--ink);font-family:"Segoe UI",-apple-system,Roboto,Helvetica,Arial,sans-serif;
+       min-height:100vh;display:flex;align-items:center;justify-content:center;gap:30px;flex-wrap:wrap;padding:26px}
+  .stageWrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .phone{width:340px;height:730px;background:var(--bg);border-radius:44px;position:relative;overflow:hidden;
+         box-shadow:0 0 0 11px #16161f,0 0 0 13px #26263a,0 40px 80px rgba(0,0,0,.7)}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:150px;height:26px;background:#16161f;border-radius:0 0 18px 18px;z-index:40}
+  .screen{position:absolute;inset:0 0 62px 0;display:none;flex-direction:column;padding:40px 20px 14px;overflow-y:auto}
+  .screen.active{display:flex;animation:fade .4s ease}
+  .screen::-webkit-scrollbar{width:0}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  /* bottom tab bar */
+  .tabbar{position:absolute;left:0;right:0;bottom:0;height:62px;background:#0b0b13;border-top:1px solid var(--line);
+          display:flex;z-index:45}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;color:var(--mut);cursor:pointer;font-weight:700}
+  .tab .ic{font-size:18px;filter:grayscale(.5) opacity(.7)}
+  .tab.on{color:var(--ink)}
+  .tab.on .ic{filter:none}
+  .tab.on.ent{color:var(--ent)}
+  .brand{font-weight:800;letter-spacing:3px;font-size:14px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand.ent{background:var(--entgrad);-webkit-background-clip:text;background-clip:text}
+  h1{font-size:28px;font-weight:800;line-height:1.05;letter-spacing:-.5px}
+  h2{font-size:20px;font-weight:800;letter-spacing:-.3px}
+  .mut{color:var(--mut);font-size:12.5px;line-height:1.45}
+  .row{display:flex;align-items:center;gap:10px}
+  .between{justify-content:space-between}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .glass{background:linear-gradient(160deg,rgba(139,92,255,.16),rgba(0,229,255,.06));border:1px solid #2a2740}
+  .glassE{background:linear-gradient(160deg,rgba(55,224,196,.14),rgba(74,168,255,.06));border:1px solid #1f3b3a}
+  .btn{border:0;border-radius:15px;padding:14px;font-size:14px;font-weight:800;width:100%;cursor:pointer;background:var(--grad);color:#0a0a10;letter-spacing:.3px;transition:transform .1s}
+  .btn:active{transform:scale(.97)}
+  .btn.ent{background:var(--entgrad)}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .btn.sm{padding:10px 12px;font-size:12px;width:auto}
+  .pill{font-size:10.5px;font-weight:700;padding:5px 10px;border-radius:999px;border:1px solid var(--line);color:var(--mut);cursor:pointer}
+  .pill.on{background:var(--grad);color:#0a0a10;border-color:transparent}
+  .pill.onE{background:var(--entgrad);color:#04120f;border-color:transparent}
+  .pill.warn{background:#3a1f16;border-color:#5a2c1c;color:#ffb38a}
+  .spacer{flex:1}
+  .grow{flex:1}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .back{font-size:12px;color:var(--mut);cursor:pointer;border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+  .stat{font-size:32px;font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .statE{font-size:30px;font-weight:800;background:var(--entgrad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .barwrap{height:8px;background:#1c1b28;border-radius:999px;overflow:hidden}
+  .bar{height:100%;width:64%;background:var(--grad)}
+  .barE{height:100%;background:var(--entgrad)}
+  .foot{font-size:10.5px;color:#4b4960;text-align:center;margin-top:8px}
+  .orb{width:50px;height:50px;border-radius:50%;position:relative;flex:none;
+       background:radial-gradient(circle at 32% 28%,#fff,#ff2d95 30%,#8b5cff 60%,#00131f 100%);
+       box-shadow:0 0 18px rgba(139,92,255,.7),0 0 30px rgba(0,229,255,.35);animation:pulse 2.6s ease-in-out infinite}
+  .orb.sm{width:34px;height:34px}
+  .orb.dead{background:radial-gradient(circle at 32% 28%,#3a3a44,#1a1a22 70%);box-shadow:none;opacity:.5;animation:none}
+  .orb.ent{background:radial-gradient(circle at 32% 28%,#eafffb,#37e0c4 32%,#4aa8ff 66%,#031318 100%);box-shadow:0 0 18px rgba(55,224,196,.6),0 0 30px rgba(74,168,255,.3)}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+  .field{flex:1;display:flex;align-items:center;justify-content:center;position:relative;margin:6px 0;min-height:180px}
+  .bigorb{width:190px;height:190px;border-radius:50%;position:relative;
+          background:conic-gradient(from 0deg,#ff2d95,#8b5cff,#00e5ff,#ff2d95);filter:blur(2px);
+          animation:spin 8s linear infinite,pulse 3s ease-in-out infinite;box-shadow:0 0 60px rgba(139,92,255,.6)}
+  .bigorb::after{content:"";position:absolute;inset:24px;border-radius:50%;background:#07070c}
+  .bigorb.ent{background:conic-gradient(from 0deg,#37e0c4,#4aa8ff,#8ef0dd,#37e0c4);box-shadow:0 0 55px rgba(55,224,196,.5)}
+  .bigorb.calm{width:120px;height:120px;animation:pulse 3s ease-in-out infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .timer{position:absolute;z-index:5;text-align:center}
+  .timer .t{font-size:40px;font-weight:800;letter-spacing:-1px}
+  .players{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .pcol{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;color:var(--mut);width:58px;text-align:center}
+  .center{text-align:center}
+  .wheel{width:190px;height:190px;border-radius:50%;margin:8px auto;position:relative;
+    background:conic-gradient(#ff2d95 0 60deg,#8b5cff 60deg 120deg,#00e5ff 120deg 180deg,#ff8a3d 180deg 240deg,#3dffab 240deg 300deg,#ff2d95 300deg 360deg);
+    box-shadow:0 0 46px rgba(139,92,255,.55);transition:transform 3.6s cubic-bezier(.15,.9,.15,1)}
+  .needle{position:absolute;top:-4px;left:50%;transform:translateX(-50%);border-left:11px solid transparent;border-right:11px solid transparent;border-top:20px solid #fff;z-index:5}
+  .prize{border-radius:16px;padding:16px;text-align:center;background:linear-gradient(160deg,#1b1330,#0c0c16);border:1px solid #3a2b5c}
+  .rarity{font-size:11px;font-weight:800;letter-spacing:2px;color:#ffd23d}
+  .toast{position:absolute;bottom:74px;left:20px;right:20px;background:#1a1626;border:1px solid #322a4a;border-radius:14px;padding:11px 13px;font-size:12px;color:var(--mut);z-index:46;animation:fade .3s}
+  .qr{width:70px;height:70px;border-radius:12px;background:conic-gradient(#000 25%,#fff 0 50%,#000 0 75%,#fff 0) 0 0/15px 15px,#fff;border:5px solid #fff}
+  .lb{display:flex;flex-direction:column;gap:7px}
+  .lrow{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 11px}
+  .lrow.me{border-color:#5b4bd0;background:linear-gradient(160deg,rgba(139,92,255,.18),rgba(0,229,255,.04))}
+  .lrow.meE{border-color:#2c7d72;background:linear-gradient(160deg,rgba(55,224,196,.16),rgba(74,168,255,.04))}
+  .lrk{width:20px;text-align:center;font-weight:800;color:var(--mut)}
+  .lname{font-weight:700;font-size:13px}
+  .lsub{font-size:10.5px;color:var(--mut)}
+  .lval{font-weight:800;font-size:13px}
+  .lval.g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lval.gE{background:var(--entgrad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .divzone{font-size:9.5px;letter-spacing:1.5px;font-weight:800;color:#6ad0a0;text-transform:uppercase;margin:3px 0}
+  .divzone.rel{color:#e08a6a}
+  .tgl{width:40px;height:23px;border-radius:999px;background:#2a2740;position:relative;flex:none;cursor:pointer}
+  .tgl.on{background:var(--entgrad)}
+  .tgl::after{content:"";position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.18s}
+  .tgl.on::after{left:19px}
+  .evt{border-left:3px solid var(--ent);background:var(--panel2);border-radius:0 12px 12px 0;padding:10px 12px;cursor:pointer}
+  .dbars{display:flex;align-items:flex-end;gap:7px;height:92px;padding-top:6px}
+  .dbar{flex:1;background:var(--entgrad);border-radius:5px 5px 0 0;position:relative;min-width:0}
+  .dbar span{position:absolute;bottom:-16px;left:0;right:0;text-align:center;font-size:9px;color:var(--mut)}
+  .badge{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;background:#181524;border:1px solid #2c2740}
+  .tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:1.5px;padding:3px 8px;border-radius:6px;background:#1b1330;color:#ffd23d;border:1px solid #3a2b5c}
+  .flame{font-size:20px;line-height:1}
+  .flame.blaze{filter:hue-rotate(180deg) brightness(1.3) drop-shadow(0 0 6px #6ad0ff)}
+  .flame.risk{filter:grayscale(.7) brightness(.8);opacity:.75}
+  .flame.chrome{filter:saturate(1.6) drop-shadow(0 0 6px #b98cff)}
+  .cap{max-width:360px;color:#7d7a95;font-size:12px;text-align:center;line-height:1.5}
+  .revealWrap{display:flex;justify-content:center;margin:4px 0}
+  .revealVid{width:224px;border-radius:20px;box-shadow:0 0 40px rgba(139,92,255,.4);background:#07070c}
+  .flexcard{width:100%;border-radius:18px;display:block;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+</style>
+</head>
+<body>
+
+<div class="stageWrap">
+<div class="phone">
+  <div class="notch"></div>
+
+  <!-- ===================== HOME WORLD ===================== -->
+  <!-- HOME -->
+  <section class="screen active" id="home" data-tab="home">
+    <div class="row between"><div class="brand">FACEDOWN</div><div class="orb sm"></div></div>
+    <div style="height:12px"></div>
+    <div class="row between" style="align-items:flex-start"><h1>you're<br>#2 this<br>season</h1><div class="center"><div class="stat">4,820</div><div class="mut">aura</div></div></div>
+    <div style="height:6px"></div>
+    <div class="mut">200 aura from the 👑 Crown — held by <b style="color:#fff">maya</b></div>
+    <div style="height:12px"></div>
+    <div class="card glass" onclick="go('streakRisk')" style="cursor:pointer">
+      <div class="row between"><div class="row"><span class="flame blaze">🔥</span><b style="font-size:13px">crew streak · 9 hangouts</b></div><div class="pill onE">blazing</div></div>
+      <div style="height:7px"></div><div class="mut">maya, leo, ken + you (crew of 4/10). don't be the one who lets it die.</div>
+    </div>
+    <div style="height:10px"></div>
+    <div class="card" onclick="go('room')" style="cursor:pointer;border-color:#3a2b5c;background:linear-gradient(160deg,#160f26,#0c0c16)">
+      <div class="row between"><div class="tag">SPONSORED SEASON</div><div class="mut">7 days left</div></div>
+      <div style="height:7px"></div><b style="font-size:13px">Rivoli Theater challenge</b><div class="mut">phone-free a full show → real reward</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" onclick="go('create')">Start a Table ▸</button>
+    <div class="row" style="margin-top:8px"><button class="btn ghost sm grow" onclick="go('room')">Enter a Room (QR)</button><button class="btn ghost sm grow" onclick="go('brag')">See a Brag card</button></div>
+  </section>
+
+  <!-- CREATE TABLE -->
+  <section class="screen" id="create" data-tab="home">
+    <div class="topbar"><div class="back" onclick="go('home')">‹ back</div><div class="brand">NEW TABLE</div><div style="width:44px"></div></div>
+    <h2>Set the table</h2><div style="height:12px"></div>
+    <div class="card"><div class="mut">MODE</div><div style="height:9px"></div>
+      <div class="row"><div class="pill on" id="mCoop" onclick="mode('coop')">🤝 Co-op · everyone wins</div></div>
+      <div style="height:7px"></div>
+      <div class="row"><div class="pill" id="mElim" onclick="mode('elim')">☠️ Elimination · last one standing</div></div>
+      <div style="height:9px"></div><div class="mut" id="modeDesc">Nobody's out. Goal = the whole table stays present. Wholesome vibe.</div>
+    </div>
+    <div style="height:10px"></div>
+    <div class="card row between"><div><div>Duration</div><div class="mut">how long, facedown</div></div><div class="pill on">60 min</div></div>
+    <div style="height:10px"></div>
+    <div class="card row between"><div><div>Stake</div><div class="mut">aura into the pot</div></div><div class="pill on">100 ✦</div></div>
+    <div class="spacer"></div>
+    <button class="btn" onclick="go('lobby')">Open the Table ▸</button>
+  </section>
+
+  <!-- LOBBY -->
+  <section class="screen" id="lobby" data-tab="home">
+    <div class="topbar"><div class="back" onclick="go('create')">‹ back</div><div class="brand">TABLE · "pub night"</div><div style="width:44px"></div></div>
+    <h2 id="lobbyMode">☠️ Elimination · 60 min · pot 400 ✦</h2>
+    <div style="height:12px"></div>
+    <div class="card center"><div class="mut">friends scan to join</div><div style="height:10px"></div>
+      <div class="qr" style="margin:0 auto"></div><div style="height:9px"></div><div class="mut">or code <b style="color:#fff">FD-9K2</b></div></div>
+    <div style="height:12px"></div>
+    <div class="players">
+      <div class="pcol"><div class="orb"></div>you</div>
+      <div class="pcol"><div class="orb"></div>maya 👑</div>
+      <div class="pcol"><div class="orb"></div>leo</div>
+      <div class="pcol"><div class="orb"></div>ken</div>
+    </div>
+    <div style="height:12px"></div>
+    <div class="card glass center"><b>📵 phones face-down in the middle</b><div style="height:5px"></div><div class="mut">the app takes over. leave it = you're out.</div></div>
+    <div class="spacer"></div>
+    <button class="btn" onclick="startSession()">Everyone's in — GO ▸</button>
+  </section>
+
+  <!-- LIVE -->
+  <section class="screen" id="live" data-tab="home">
+    <div class="center brand">FACEDOWN · LIVE</div>
+    <div class="field">
+      <div class="bigorb"></div>
+      <div class="timer"><div class="t" id="clock">59:12</div><div class="mut">pot 400 ✦ · 4 in</div></div>
+    </div>
+    <div class="players" id="livePlayers">
+      <div class="pcol" id="p-you"><div class="orb sm"></div>you</div>
+      <div class="pcol" id="p-maya"><div class="orb sm"></div>maya</div>
+      <div class="pcol" id="p-leo"><div class="orb sm"></div>leo</div>
+      <div class="pcol" id="p-ken"><div class="orb sm"></div>ken</div>
+    </div>
+    <div style="height:12px"></div>
+    <div class="mut center">the session <b style="color:#fff">is</b> the game — aura intensifies the longer you last.</div>
+    <div class="spacer"></div>
+    <button class="btn ghost" onclick="crack()">⚡ simulate: someone grabs their phone</button>
+    <div class="foot">(demo control — real app detects app-exit / screen-wake)</div>
+  </section>
+
+  <!-- WINNER -->
+  <section class="screen" id="winner" data-tab="home">
+    <div class="spacer"></div>
+    <div class="center"><div style="font-size:52px">👑</div><h1>you're the<br>last one standing</h1>
+      <div style="height:10px"></div><div class="mut">1h 12m facedown · you outlasted the whole table</div></div>
+    <div style="height:18px"></div>
+    <div class="card glass center"><div class="mut">this round earned</div><div class="stat">+340 ✦</div><div class="mut">and the <b style="color:#fff">Aura Reveal</b> — the rare drop only the last one standing earns</div></div>
+    <div class="spacer"></div>
+    <button class="btn" onclick="go('drop')">Open your Aura Reveal ▸</button>
+  </section>
+
+  <!-- AURA REVEAL (the drop — no casino spin; it's the gacha card reveal you earn by staying present) -->
+  <section class="screen" id="drop" data-tab="home">
+    <div class="center brand">AURA REVEAL</div><div style="height:4px"></div>
+    <div class="cap">the drop you earned by staying present — Honey's real animated reveal 👇</div>
+    <div style="height:8px"></div>
+    <div class="revealWrap"><video class="revealVid" id="revealVid"
+      src="./assets/aura-reveal.mp4"
+      autoplay muted loop playsinline></video></div>
+    <div style="height:8px"></div>
+    <div class="center"><span class="rarity">✦ MYTHIC AURA · +1200 ✦</span></div>
+    <div class="spacer"></div>
+    <button class="btn" onclick="go('brag')">Flex it ▸</button>
+    <div class="foot">same asset, two jobs: end-of-session reveal + the shareable card</div>
+  </section>
+
+  <!-- BRAG -->
+  <section class="screen" id="brag" data-tab="home">
+    <div class="topbar"><div class="back" onclick="go('home')">‹ home</div><div class="brand">SHARE</div><div style="width:44px"></div></div>
+    <div class="cap" style="margin-bottom:8px">Honey's real flex card — TOP 3% ribbon + BEAT OUR 2H14 duel CTA</div>
+    <img class="flexcard" src="./assets/aura-flex-card.png" alt="Aura flex card">
+    <div style="height:12px"></div>
+    <div class="row"><button class="btn grow" onclick="alert('→ Instagram / TikTok / WhatsApp story')">Share</button>
+      <button class="btn ghost grow" onclick="alert('→ Challenge sent to another table (deferred deep-link: a non-user who taps this installs → lands in a table with 1h12 as the target)')">Challenge ▸</button></div>
+    <div class="foot">the loser sees this. FOMO on the Drop = the rematch.</div>
+  </section>
+
+  <!-- SPONSORED ROOM -->
+  <section class="screen" id="room" data-tab="home">
+    <div class="topbar"><div class="back" onclick="go('home')">‹ back</div><div class="brand">SPONSORED ROOM</div><div style="width:44px"></div></div>
+    <div class="card glass center" style="padding:18px 14px">
+      <div class="mut">presented by</div><h2>The Rivoli Theater</h2>
+      <div style="height:7px"></div><div class="mut">stay facedown the whole show → claim your reward</div>
+      <div style="height:12px"></div><div class="bigorb calm" style="margin:0 auto"></div>
+      <div style="height:12px"></div><div class="stat" style="font-size:28px">327 people in</div><div class="mut">no pool, no stakes — everyone who lasts wins</div>
+    </div>
+    <div style="height:10px"></div>
+    <div class="card row between"><div>🎁 reward</div><div class="pill on">free drink + program</div></div>
+    <div class="spacer"></div>
+    <button class="btn" onclick="startSession()">Join the show ▸</button>
+    <div class="foot">one QR on the playbill onboards a whole audience · a gift, not a wager</div>
+  </section>
+
+  <!-- ===================== LEAGUE WORLD ===================== -->
+  <!-- LEAGUE -->
+  <section class="screen" id="league" data-tab="league">
+    <div class="row between"><div class="brand">AURA LEAGUE</div><div class="pill on">SEASON 2</div></div>
+    <div style="height:8px"></div>
+    <div class="card glass row between"><div><div class="mut">ends in</div><b style="font-size:15px">11d 04h</b><div class="mut">6-wk season</div></div><div style="text-align:right"><div class="mut">you need</div><b style="font-size:15px;color:#8ef">+200 to #1</b></div></div>
+    <div style="height:10px"></div>
+    <div class="divzone">▲ promotion — top 3</div>
+    <div class="lb">
+      <div class="lrow"><div class="lrk">1</div><div class="orb sm"></div><div class="grow"><div class="lname">maya 👑</div><div class="lsub">most present · 41h</div></div><div class="lval g">5,020</div></div>
+      <div class="lrow me"><div class="lrk">2</div><div class="orb sm"></div><div class="grow"><div class="lname">you</div><div class="lsub">38h facedown</div></div><div class="lval g">4,820</div></div>
+      <div class="lrow"><div class="lrk">3</div><div class="orb sm"></div><div class="grow"><div class="lname">leo</div><div class="lsub">34h</div></div><div class="lval g">4,310</div></div>
+    </div>
+    <div class="divzone rel" style="margin-top:8px">▼ relegation — bottom</div>
+    <div class="lb">
+      <div class="lrow"><div class="lrk">4</div><div class="orb sm dead"></div><div class="grow"><div class="lname">ken</div><div class="lsub">19h · slipping</div></div><div class="lval">2,540</div></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ghost" onclick="go('titles')">🏅 All-time titles ▸</button>
+  </section>
+
+  <!-- TITLES -->
+  <section class="screen" id="titles" data-tab="league">
+    <div class="topbar"><div class="back" onclick="go('league')">‹ league</div><div class="brand">ALL-TIME TITLES</div><div style="width:44px"></div></div>
+    <div class="mut">these don't reset. this is the flex.</div>
+    <div style="height:10px"></div>
+    <div class="card glass"><div class="row"><span style="font-size:24px">👑</span><div><b style="font-size:14px">Most Present</b><div class="mut">in the crew — 3 seasons running</div></div></div></div>
+    <div style="height:8px"></div>
+    <div class="card"><div class="row"><span class="flame chrome" style="font-size:22px">🔥</span><div><b style="font-size:14px">Chrome Streak</b><div class="mut">held a 15+ crew streak</div></div></div></div>
+    <div style="height:8px"></div>
+    <div class="card"><div class="row"><span style="font-size:22px">🌆</span><div><b style="font-size:14px">City Top 3%</b><div class="mut">most-present table · June</div></div></div></div>
+    <div style="height:8px"></div>
+    <div class="card" style="opacity:.5"><div class="row"><span style="font-size:22px">🔒</span><div><b style="font-size:14px">Mythic Night</b><div class="mut">locked — hold a 3h table</div></div></div></div>
+    <div class="foot">titles render on your flex card (Honey's badge row)</div>
+  </section>
+
+  <!-- STREAK AT RISK -->
+  <section class="screen" id="streakRisk" data-tab="league">
+    <div class="topbar"><div class="back" onclick="go('home')">‹ back</div><div class="brand">CREW STREAK</div><div style="width:44px"></div></div>
+    <div class="center"><span class="flame risk" style="font-size:56px">🔥</span>
+      <div style="height:8px"></div><h1>9 is slipping</h1>
+      <div style="height:6px"></div><div class="mut">nobody's gone facedown in 6 days. one hangout keeps it alive — don't be the reason it drops.</div></div>
+    <div style="height:12px"></div>
+    <div class="card row between" style="border-color:#3a2c1c;background:#1a120c">
+      <div class="row"><span style="font-size:20px">❄️</span><div><b style="font-size:13px">Use a streak-freeze</b><div class="mut">1 owned · buys you 48h</div></div></div><div class="pill warn">grace</div></div>
+    <div class="spacer"></div>
+    <button class="btn" onclick="go('milestone')">Rally the crew tonight ▸</button>
+    <button class="btn ghost" style="margin-top:8px" onclick="alert('❄️ streak frozen for 48h — a lost streak never zeroes, it dims to an ember you relight')">Freeze it (❄️ ×1)</button>
+    <div class="foot">a lost streak never zeroes — it dims to an ember you can relight</div>
+  </section>
+
+  <!-- MILESTONE -->
+  <section class="screen" id="milestone" data-tab="league">
+    <div class="center" style="display:flex;flex-direction:column;flex:1">
+      <div class="spacer"></div>
+      <span class="flame blaze" style="font-size:72px">🔥</span>
+      <div style="height:10px"></div><h1>10 hangouts<br>facedown</h1>
+      <div style="height:8px"></div><div class="mut">your crew just went <b style="color:#8ef">blazing</b> — top 6% of crews this month</div>
+      <div style="height:14px"></div>
+      <div class="card glass"><div class="mut">crew unlocked</div><b style="font-size:14px">❄️ +1 streak-freeze &amp; a Blazing skin</b></div>
+      <div class="spacer"></div>
+      <button class="btn" onclick="go('brag')">Share the milestone ▸</button>
+      <button class="btn ghost" style="margin-top:8px" onclick="go('league')">Nice, keep going</button>
+    </div>
+  </section>
+
+  <!-- ===================== WORK WORLD (enterprise) ===================== -->
+  <!-- CONSENT -->
+  <section class="screen" id="consent" data-tab="work">
+    <div class="brand ent">FACEDOWN · WORK</div>
+    <div style="height:12px"></div>
+    <div class="bigorb ent calm" style="margin:0 auto"></div>
+    <div style="height:12px"></div>
+    <h2>Acme wants meetings<br>to be present.</h2>
+    <div style="height:8px"></div>
+    <div class="card glassE"><div class="row"><span style="font-size:18px">🔒</span><div class="mut" style="color:#cfeee8"><b style="color:#eafffb">We only know if the app is open.</b> We can't see your screen, your messages, or what you're doing — ever.</div></div></div>
+    <div style="height:8px"></div>
+    <div class="card row between"><div class="mut">Join my meetings automatically</div><div class="tgl" onclick="this.classList.toggle('on')"></div></div>
+    <div style="height:7px"></div>
+    <div class="card row between"><div class="mut">Show my name on team boards</div><div class="tgl" onclick="this.classList.toggle('on')"></div></div>
+    <div class="spacer"></div>
+    <button class="btn ent" onclick="go('today')">I'm in — connect calendar ▸</button>
+    <div class="foot">both toggles OFF by default · presence is never tracked outside meetings you're invited to</div>
+  </section>
+
+  <!-- TODAY / AUTO-ENROLL -->
+  <section class="screen" id="today" data-tab="work">
+    <div class="row between"><div class="brand ent">TODAY</div><div class="pill onE">calendar synced</div></div>
+    <div style="height:10px"></div>
+    <div class="evt" onclick="startMeeting()"><div class="row between"><b style="font-size:13px">Design Sync</b><span class="mut">now</span></div><div class="mut">8 invited · auto-joined</div></div>
+    <div style="height:8px"></div>
+    <div class="evt" style="opacity:.7"><div class="row between"><b style="font-size:13px">Sprint Planning</b><span class="mut">2:00</span></div><div class="mut">12 invited</div></div>
+    <div style="height:8px"></div>
+    <div class="evt" style="opacity:.5"><div class="row between"><b style="font-size:13px">1:1 · Sam</b><span class="mut">4:30</span></div><div class="mut">2 invited</div></div>
+    <div style="height:14px"></div>
+    <div class="card glassE center"><div class="mut">starting now</div><b style="font-size:15px">Design Sync</b><div style="height:5px"></div><div class="mut">phones face-down · 45 min · presence on</div></div>
+    <div class="spacer"></div>
+    <button class="btn ent" onclick="startMeeting()">Go present ▸</button>
+    <div class="foot">no manual setup — the meeting IS the session</div>
+  </section>
+
+  <!-- IN-MEETING -->
+  <section class="screen" id="meeting" data-tab="work">
+    <div class="center brand ent">DESIGN SYNC · LIVE</div>
+    <div class="field"><div class="bigorb ent"></div>
+      <div class="timer"><div class="t statE" id="mclock" style="-webkit-background-clip:text;background-clip:text">24:18</div><div class="mut">present · 45 min</div></div></div>
+    <div class="card glassE row between"><div class="mut">present now</div><b style="color:#8ef0dd;font-size:14px">7 of 8</b></div>
+    <div style="height:12px"></div>
+    <div class="mut center">put it down. we'll tell you when it's over.</div>
+    <div class="spacer"></div>
+    <button class="btn ghost" onclick="alert('⏸ stepping out for a real call never dings you (lifeline)')">Step out (real call) ⏸</button>
+    <button class="btn ent" style="margin-top:8px" onclick="go('postmeeting')">▸ end meeting (demo)</button>
+  </section>
+
+  <!-- POST-MEETING -->
+  <section class="screen" id="postmeeting" data-tab="work">
+    <div class="brand ent">DESIGN SYNC · DONE</div>
+    <div style="height:10px"></div>
+    <div class="card glassE center"><div class="mut">your team reclaimed</div><div class="statE" style="font-size:32px">5h 12m</div><div class="mut">of present meeting-time today</div></div>
+    <div style="height:10px"></div>
+    <div class="mut" style="font-weight:700;color:#cfeee8">🏅 most present this meeting</div>
+    <div style="height:6px"></div>
+    <div class="lb">
+      <div class="lrow"><div class="lrk">1</div><div class="orb sm ent"></div><div class="grow"><div class="lname">priya</div><div class="lsub">45m · full session</div></div><div class="lval gE">100%</div></div>
+      <div class="lrow meE"><div class="lrk">2</div><div class="orb sm ent"></div><div class="grow"><div class="lname">you</div><div class="lsub">44m present</div></div><div class="lval gE">98%</div></div>
+      <div class="lrow"><div class="lrk">3</div><div class="orb sm ent"></div><div class="grow"><div class="lname">sam</div><div class="lsub">43m</div></div><div class="lval gE">96%</div></div>
+    </div>
+    <div style="height:8px"></div>
+    <div class="card" style="border-color:#1f3b3a"><div class="mut">team present rate <b style="color:#8ef0dd">94%</b> · nobody's called out — just the wins</div></div>
+    <div class="spacer"></div>
+    <button class="btn ent" onclick="go('teams')">Team standings ▸</button>
+    <div class="foot">the "on their phone" list is private/self-view by default</div>
+  </section>
+
+  <!-- TEAMS -->
+  <section class="screen" id="teams" data-tab="work">
+    <div class="topbar"><div class="back" onclick="go('postmeeting')">‹ back</div><div class="brand ent">THIS WEEK</div><div class="pill onE">🏆 teams</div></div>
+    <div class="card glassE center"><div class="mut">Most Present Team 🏆</div><b style="font-size:17px">Platform</b><div class="mut">reclaimed 41h · 97% present</div></div>
+    <div style="height:10px"></div>
+    <div class="lb">
+      <div class="lrow"><div class="lrk">1</div><div class="badge">🛠️</div><div class="grow"><div class="lname">Platform</div><div class="lsub">97% present</div></div><div class="lval gE">41h</div></div>
+      <div class="lrow meE"><div class="lrk">2</div><div class="badge">🎨</div><div class="grow"><div class="lname">Design (you)</div><div class="lsub">94% present</div></div><div class="lval gE">33h</div></div>
+      <div class="lrow"><div class="lrk">3</div><div class="badge">📈</div><div class="grow"><div class="lname">Growth</div><div class="lsub">91%</div></div><div class="lval gE">29h</div></div>
+      <div class="lrow"><div class="lrk">4</div><div class="badge">💼</div><div class="grow"><div class="lname">Sales</div><div class="lsub">88%</div></div><div class="lval gE">26h</div></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ent" onclick="go('dashboard')">Manager dashboard ▸</button>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="screen" id="dashboard" data-tab="work">
+    <div class="topbar"><div class="back" onclick="go('teams')">‹ back</div><div class="brand ent">ADMIN · TRENDS</div><div class="pill">Design</div></div>
+    <div class="card"><div class="row between"><div class="mut">present-min reclaimed / wk</div><div class="statE" style="font-size:20px">+22%</div></div>
+      <div style="height:16px"></div>
+      <div class="dbars">
+        <div class="dbar" style="height:40%"><span>w1</span></div>
+        <div class="dbar" style="height:52%"><span>w2</span></div>
+        <div class="dbar" style="height:48%"><span>w3</span></div>
+        <div class="dbar" style="height:70%"><span>w4</span></div>
+        <div class="dbar" style="height:88%"><span>w5</span></div>
+      </div><div style="height:20px"></div></div>
+    <div style="height:8px"></div>
+    <div class="row" style="gap:9px">
+      <div class="card grow center"><div class="statE" style="font-size:22px">94%</div><div class="mut">present rate</div></div>
+      <div class="card grow center"><div class="statE" style="font-size:22px">33h</div><div class="mut">reclaimed / wk</div></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ghost" onclick="go('admin')">Admin console ▸</button>
+    <div class="foot">aggregate only — managers see team health, not who-did-what</div>
+  </section>
+
+  <!-- ADMIN -->
+  <section class="screen" id="admin" data-tab="work">
+    <div class="topbar"><div class="back" onclick="go('dashboard')">‹ back</div><div class="brand ent">ACME · WORKSPACE</div><div style="width:44px"></div></div>
+    <div class="card glassE"><div class="row between"><div><div class="mut">seats</div><b style="font-size:16px">184 / 200</b></div><button class="btn ent sm">Add seats</button></div>
+      <div style="height:9px"></div><div class="barwrap"><div class="barE" style="width:92%"></div></div></div>
+    <div style="height:9px"></div>
+    <div class="card row between"><div class="row"><span style="font-size:18px">📅</span><div><b style="font-size:13px">Google Calendar</b><div class="mut">synced · auto-enroll on</div></div></div><div class="pill onE">connected</div></div>
+    <div style="height:8px"></div>
+    <div class="card row between"><div class="row"><span style="font-size:18px">📅</span><div><b style="font-size:13px">Outlook</b><div class="mut">not connected</div></div></div><div class="pill">connect</div></div>
+    <div style="height:9px"></div>
+    <div class="card"><div class="row between"><b style="font-size:13px">Teams</b><span class="mut">6 set up</span></div>
+      <div style="height:8px"></div><div class="row" style="flex-wrap:wrap;gap:6px"><span class="pill">🛠️ Platform</span><span class="pill">🎨 Design</span><span class="pill">📈 Growth</span><span class="pill">+3</span></div></div>
+    <div class="spacer"></div>
+    <button class="btn ent">Invite the company ▸</button>
+    <div class="foot">per-seat SaaS · no coins, no pot in work mode</div>
+  </section>
+
+  <!-- BOTTOM NAV -->
+  <div class="tabbar">
+    <div class="tab on" id="tab-home" onclick="go('home')"><div class="ic">✦</div>Home</div>
+    <div class="tab" id="tab-league" onclick="go('league')"><div class="ic">🏆</div>League</div>
+    <div class="tab ent" id="tab-work" onclick="go('consent')"><div class="ic">🏢</div>Work</div>
+  </div>
+
+</div>
+<div class="cap">FACEDOWN — clickable prototype v1 · one flow, three worlds: <b>Home</b> (play a table → win → drop → flex), <b>League</b> (season ladder, titles, crew-streak states), <b>Work</b> (enterprise: consent → meeting → team boards). Tap the bottom nav + buttons to walk it. Placeholder art — vibe + flow over polish.</div>
+</div>
+
+<script>
+  let elimMode=true, cracked=0, cl=59*60+12, timer=null;
+  const tabOf={};
+  function go(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    const el=document.getElementById(id); el.classList.add('active'); el.scrollTop=0;
+    const tab=el.getAttribute('data-tab');
+    ['home','league','work'].forEach(t=>{
+      const b=document.getElementById('tab-'+t); if(b) b.classList.toggle('on', t===tab);
+    });
+  }
+  function mode(m){elimMode=(m==='elim');
+    document.getElementById('mElim').classList.toggle('on',elimMode);
+    document.getElementById('mCoop').classList.toggle('on',!elimMode);
+    document.getElementById('modeDesc').textContent=elimMode
+      ?"Crack and you're out, your stake stays in the pot. Last one standing takes it. The competitive dopamine game.":
+       "Nobody's out. Goal = the whole table stays present. Wholesome vibe.";
+    document.getElementById('lobbyMode').textContent=(elimMode?'☠️ Elimination':'🤝 Co-op')+' · 60 min · pot 400 ✦';
+  }
+  function startSession(){go('live');cracked=0;cl=59*60+12;fmt();
+    if(timer)clearInterval(timer);
+    timer=setInterval(()=>{cl-=17;if(cl<0)cl=0;fmt();},900);}
+  function fmt(){let m=Math.floor(cl/60),s=cl%60;document.getElementById('clock').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;}
+  const order=['ken','leo','maya'];
+  function crack(){
+    if(cracked<order.length){
+      const name=order[cracked];const col=document.getElementById('p-'+name);
+      col.querySelector('.orb').classList.add('dead');
+      col.innerHTML='<div class="orb sm dead"></div>'+name+' 💀';
+      showToast(name+' grabbed their phone — aura lost. stake stays in the pot ☠️');
+      cracked++;
+    } else { clearInterval(timer); go(elimMode?'winner':'drop'); }
+  }
+  function showToast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;
+    document.getElementById('live').appendChild(t);setTimeout(()=>t.remove(),2200);}
+  function startMeeting(){go('meeting');let mc=24*60+18;const mt=setInterval(()=>{mc-=13;if(mc<=0){mc=0;clearInterval(mt);}
+    let m=Math.floor(mc/60),s=mc%60;const el=document.getElementById('mclock');if(el)el.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;},1000);}
+</script>
+</body>
+</html>
