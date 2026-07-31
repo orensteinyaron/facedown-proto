@@ -107,6 +107,27 @@ h2{font-family:var(--disp);font-weight:800;letter-spacing:-.01em;line-height:1.0
 .dots a{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:.2s}
 .dots a:hover{background:rgba(255,255,255,.5)}
 .hint{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);color:var(--dim);font-size:12px;z-index:50;letter-spacing:.08em}
+/* phone invite screen (s6) */
+.invite{position:absolute;inset:0;
+  background:radial-gradient(120% 78% at 50% -6%,rgba(139,92,255,.38),transparent 62%),
+             radial-gradient(110% 55% at 50% 104%,rgba(0,229,255,.24),transparent 60%),#08060f;
+  display:flex;flex-direction:column;align-items:center;padding:30px 22px 24px}
+.invite .inv-top{display:flex;justify-content:space-between;align-items:center;width:100%}
+.inv-live{font-family:var(--disp);font-weight:800;letter-spacing:.14em;color:#37e0c4;font-size:10px}
+.inv-name{color:#cfc9ef;font-weight:600;font-size:11px}
+.inv-pot{text-align:center;margin-top:18px}
+.inv-pot .n{font-family:var(--disp);font-weight:800;font-size:38px;letter-spacing:-.02em;line-height:1;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.inv-pot .l{color:var(--mut);font-size:9.5px;letter-spacing:.2em;margin-top:6px;font-weight:600}
+.inv-qr{margin-top:20px;background:#fff;border-radius:20px;padding:13px;
+  box-shadow:0 0 0 1px rgba(255,255,255,.12),0 18px 48px rgba(139,92,255,.5)}
+.inv-qr img{display:block;position:static;transform:none;width:150px;height:150px;border-radius:6px;object-fit:fill}
+.inv-cta{font-family:var(--disp);font-weight:800;font-size:19px;margin-top:18px;text-align:center;letter-spacing:-.01em}
+.inv-sub{color:var(--mut);font-size:11.5px;margin-top:7px;text-align:center;line-height:1.4}
+.inv-friends{margin-top:auto;display:flex;align-items:center;gap:9px;color:#d9d5f0;font-size:11.5px}
+.inv-av{display:flex}
+.inv-av span{width:22px;height:22px;border-radius:50%;border:2px solid #08060f;margin-left:-8px;background:var(--grad)}
+.inv-av span:first-child{margin-left:0}
 @media (max-width:860px){
   .cols,.stats,.grid4,.modegrid,.flow,.coinrow{grid-template-columns:1fr;flex-direction:column}
   .slide{padding:9vh 7vw;height:auto;min-height:100vh}.dots{display:none}
@@ -205,19 +226,35 @@ h2{font-family:var(--disp);font-weight:800;letter-spacing:-.01em;line-height:1.0
 <!-- 6 VIRAL LOOP (the engine) -->
 <section class="slide" id="s6">
   <div class="wm">FACEDOWN</div><div class="num">06 / 13</div>
-  <div class="kicker">The engine</div>
-  <h2>Every table <span class="grad">is an install.</span></h2>
-  <div class="sub">Growth is not ads. It is the game itself. One person starts a Table, and the crew joins by scanning a QR code, right there in the room.</div>
-  <div class="flow">
-    <div class="fbox"><div class="n">01 · in the room</div><div class="t">Scan the QR</div><p>The host opens a Table. Everyone points their camera at the code.</p></div>
-    <div class="fbox"><div class="n">02 · both paths</div><div class="t">App or no app</div><p>Have the app: you are in instantly. No app: a fast download and a roughly 30 second onboarding.</p></div>
-    <div class="fbox"><div class="n">03 · no dead end</div><div class="t">Same live table</div><p>Everyone lands in the exact same table, at peak motivation: friends waiting, pot live, pressure on.</p></div>
+  <div class="cols" style="grid-template-columns:1.32fr .68fr;align-items:center;gap:4vw">
+    <div>
+      <div class="kicker">The engine</div>
+      <h2>Every table <span class="grad">is an install.</span></h2>
+      <div class="sub">Growth is not ads. It is the game itself. One person starts a Table, and the crew joins by scanning a QR code, right there in the room.</div>
+      <div class="flow" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px">
+        <div class="fbox"><div class="n">01 · in the room</div><div class="t">Scan the QR</div><p>The host opens a Table. Everyone points their camera at the code.</p></div>
+        <div class="fbox"><div class="n">02 · both paths</div><div class="t">App or no app</div><p>Have the app: you are in instantly. No app: a fast download and a roughly 30 second onboarding.</p></div>
+        <div class="fbox"><div class="n">03 · no dead end</div><div class="t">Same live table</div><p>Everyone lands in the exact same table, at peak motivation: friends waiting, pot live, pressure on.</p></div>
+      </div>
+      <ul class="pts" style="margin-top:20px;max-width:none">
+        <li>Two social forces do the work: friends <b>pull you in</b> (you cannot be the one who won't play), then <b>pressure you to win</b> (don't be the one who cracks).</li>
+        <li>It travels beyond the room too: the trophy card becomes a "beat our 2h14" callout that reaches people who were not there, and it is TikTok native.</li>
+      </ul>
+      <div class="bigline">Net effect: <span class="grad">near zero customer acquisition cost.</span> The product is its own distribution.</div>
+    </div>
+    <div class="phonewrap">
+      <div class="phone">
+        <div class="invite">
+          <div class="inv-top"><span class="inv-live">● LIVE TABLE</span><span class="inv-name">Rooftop, Fri</span></div>
+          <div class="inv-pot"><div class="n">1,200</div><div class="l">AURA IN THE POT</div></div>
+          <div class="inv-qr"><img src="assets/qr.png" alt="QR code that a friend scans to join the live table"></div>
+          <div class="inv-cta">Scan to join the table</div>
+          <div class="inv-sub">Point your camera at the code. In the app or not, you land in this exact table.</div>
+          <div class="inv-friends"><span class="inv-av"><span></span><span></span><span></span></span>3 friends in, waiting for you</div>
+        </div>
+      </div>
+    </div>
   </div>
-  <ul class="pts" style="margin-top:22px;max-width:none">
-    <li>Two social forces do the work: friends <b>pull you in</b> (you cannot be the one who won't play), then <b>pressure you to win</b> (don't be the one who cracks).</li>
-    <li>It travels beyond the room too: the trophy card becomes a "beat our 2h14" callout that reaches people who were not there, and it is TikTok native.</li>
-  </ul>
-  <div class="bigline">Net effect: <span class="grad">near zero customer acquisition cost.</span> The product is its own distribution.</div>
 </section>
 
 <!-- 7 THE MOAT -->
@@ -259,8 +296,8 @@ h2{font-family:var(--disp);font-weight:800;letter-spacing:-.01em;line-height:1.0
 <!-- 9 ENTERPRISE B2B -->
 <section class="slide" id="s9">
   <div class="wm">FACEDOWN</div><div class="num">09 / 13</div>
-  <div class="cols">
-    <div>
+  <div class="cols" style="grid-template-columns:1.05fr .95fr;align-items:center">
+    <div style="min-width:0">
       <div class="kicker teal">Enterprise / B2B</div>
       <h2>Every meeting dies<br>the same way a dinner does.</h2>
       <ul class="pts">
@@ -270,7 +307,8 @@ h2{font-family:var(--disp);font-weight:800;letter-spacing:-.01em;line-height:1.0
         <li><b>Consent-first and presence-only</b> ("we can only tell if the app is open"). Celebrate the top, never a shame board. Per-seat SaaS, no coins in work mode.</li>
       </ul>
     </div>
-    <div>
+    <div style="min-width:0">
+      <img class="mediaimg" style="margin-bottom:18px;max-height:32vh;object-fit:cover;object-position:center 40%;max-width:100%" src="assets/meeting.png" alt="A high-tech meeting in progress: a modern conference room, the team present around the table while someone presents at a glowing screen">
       <div class="tile" style="border-color:rgba(55,224,196,.4)">
         <span class="badge" style="color:#37e0c4">Consent · presence-only</span>
         <h3 style="margin-top:10px">"We can only tell if the app is open."</h3>
